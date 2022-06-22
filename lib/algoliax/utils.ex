@@ -22,6 +22,25 @@ defmodule Algoliax.Utils do
     end
   end
 
+  def searchable_attributes(module, settings) do
+    searchable_attributes_opt =
+      settings
+      |> Keyword.get(:algolia)
+      |> Keyword.get(:searchable_attributes)
+
+    searchable_attributes =
+      if is_atom(searchable_attributes_opt) &&
+           module.__info__(:functions)
+           |> Keyword.get(searchable_attributes_opt) == 0 do
+        apply(module, searchable_attributes_opt, [])
+      else
+        searchable_attributes_opt
+      end
+
+    Index.ensure_settings(module, searchable_attributes, settings)
+    searchable_attributes
+  end
+
   def algolia_settings(settings) do
     Keyword.get(settings, :algolia, [])
   end

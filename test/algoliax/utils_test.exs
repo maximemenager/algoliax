@@ -31,6 +31,16 @@ defmodule Algoliax.UtilsTest do
       object_id: :reference
   end
 
+  defmodule SearchableAttributesFromFunction do
+    use Algoliax.Indexer,
+      index_name: :algoliax_people,
+      searchable_attributes: :searchable_attributes
+
+    def searchable_attributes do
+      ["foo", "bar"]
+    end
+  end
+
   describe "Raise exception if trying Ecto specific methods" do
     test "Algoliax.MissingRepoError" do
       assert_raise(Algoliax.MissingRepoError, fn ->
@@ -71,6 +81,21 @@ defmodule Algoliax.UtilsTest do
     test "if there is not function" do
       assert Algoliax.Utils.index_name(NoRepo, index_name: :algoliax_people) ==
                :algoliax_people
+    end
+  end
+
+  describe "should get correct searchable_attributes" do
+    test "if there is a function" do
+      assert Algoliax.Utils.searchable_attributes(SearchableAttributesFromFunction,
+               algolia: [searchable_attributes: :searchable_attributes]
+             ) ==
+               ["foo", "bar"]
+    end
+
+    test "if there is not function" do
+      assert Algoliax.Utils.searchable_attributes(Algoliax.Indexer,
+               algolia: [searchable_attributes: ["baz"]]
+             ) == ["baz"]
     end
   end
 end
